@@ -2,7 +2,7 @@
 import asyncio
 import socketio
 
-import collections import defaultdict,namedtuple
+from collections import defaultdict,namedtuple
 
 from sanic import Sanic
 from sanic.response import json
@@ -40,7 +40,7 @@ class HongpaNamespace(socketio.AsyncNamespace):
 
         await self.emit('logined', {'user':user._asdict(),'code':0}, room=sid)
 
-        for ssid in self.manager.get_participants(self, sid)
+        for ssid in self.manager.get_participants(self, sid):
             print(ssid)
 
 
@@ -48,14 +48,8 @@ class HongpaNamespace(socketio.AsyncNamespace):
         rooms = self.manager.rooms[None].keys()
 
         print('rooms ', rooms)
+
         rooms_data = []
-        """
-        {
-        sid:str,
-        user:user,
-        users:users
-        }
-        """
         for room in rooms:
             sids = self.manager.rooms[None][room].keys()
             print('sids ', sids)
@@ -65,7 +59,7 @@ class HongpaNamespace(socketio.AsyncNamespace):
             _room['users'] = users
             rooms_data.append(_room)
 
-        await self.emit('rooms',{'rooms':rooms,'code':0},room=sid)
+        await self.emit('rooms',{'rooms':rooms_data,'code':0},room=sid)
 
 
     async def on_join(self,sid,data):
@@ -87,7 +81,6 @@ class HongpaNamespace(socketio.AsyncNamespace):
             return
 
         self.leave_room(sid,room_sid)
-
         user = users.get(sid)
 
         await self.emit('user_leaved',{'user':user._asdict(),'code':0},room=room_sid,skip_sid=sid)
@@ -109,39 +102,7 @@ async def auth(request, response):
     print('middleware')
 
 
-
-@sio.on('connect')
-async def on_connect(sid, environ):
-    print('on_connect')
-    print(environ)
-
-
-
-@sio.on('disconnect')
-async def on_disconnect(sid):
-    print('on_disconnect')
-
-
-@sio.on('login')
-async def on_login(sid,message):
-
-    username = message['username']
-    user = User()
-    user.username = username
-    user.avatar = 'https://api.adorable.io/avatars/200/' + username
-    user.sid = sid
-
-    users[sid] = user
-
-    await sio.emit('joined', {'data':user._asdict()}, room=sid)
-
-
-
-
-@sio.on('create')
-async def on_create(sid, message):
-    print('join ' + sid)
-    print('message ' + str(message))
+sio.register_namespace(HongpaNamespace())
 
 
 if __name__ == '__main__':

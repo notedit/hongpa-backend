@@ -1,0 +1,49 @@
+{
+    "_meta": {
+        "hash": {
+            "sha256": "25d8bce574ca7df7aded4e7a8a4f84bfc495b98ca78d2d917ad2f6c6cdb6cbc6"
+        },
+        "requires": {},
+        "sources": [
+            {
+                "url": "https://pypi.python.org/simple",
+                "verify_ssl": true
+            }
+        ]
+    },
+    "default": {
+        "Sanic": {
+            "hash": "sha256:b87393002894a539174a0037c0f6293a558ff393d305c20fa07829f1757360a1",
+            "version": "==0.4.1"
+        },
+        "aiofiles": {
+            "hash": "sha256:cbe1bfc5513d53d084fcd887c205d651d97bc5b3a2e5fd4f5a8601ef89ad4c35",
+            "version": "==0.3.1"
+        },
+        "httptools": {
+            "hash": "sha256:f47f9870f19e3488e8def0898c46f87d36e5d59e90eb77d01453a6747cdab9f8",
+            "version": "==0.0.9"
+        },
+        "python-engineio": {
+            "hash": "sha256:cfb9f11d459e8d08e924c376737019dd5967cb1a7ec48611e25b69a948dba2a7",
+            "version": "==1.3.1"
+        },
+        "python-socketio": {
+            "hash": "sha256:9200ee48aec8673027fdc40b0391aa2d681ff994d93b738ebd9f0d29916f24c4",
+            "version": "==1.7.4"
+        },
+        "six": {
+            "hash": "sha256:0ff78c403d9bccf5a425a6d31a12aa6b47f1c21ca4dc2573a7e2f32a97335eb1",
+            "version": "==1.10.0"
+        },
+        "ujson": {
+            "hash": "sha256:f66073e5506e91d204ab0c614a148d5aa938bdbf104751be66f8ad7a222f5f86",
+            "version": "==1.35"
+        },
+        "uvloop": {
+            "hash": "sha256:281b21e98c8bcd9c64aa1d0ca7768e52914f32d526c540d07744b9b5bcb9203a",
+            "version": "==0.8.0"
+        }
+    },
+    "develop": {}
+}
