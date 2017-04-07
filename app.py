@@ -98,7 +98,6 @@ async def after_server_stop(app, loop):
 
 @app.middleware('response')
 async def auth(request, response):
-    print(request.json)
     print('middleware')
 
 
