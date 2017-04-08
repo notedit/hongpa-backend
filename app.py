@@ -1,18 +1,24 @@
 
-import asyncio
 import socketio
+
+from socketio import asyncio_manager
+
+from aiohttp import web
 
 from collections import defaultdict,namedtuple
 
-from sanic import Sanic
-from sanic.response import json
 
-sio = socketio.AsyncServer(async_mode='sanic')
-app = Sanic()
+manager = asyncio_manager.AsyncManager()
+
+sio = socketio.AsyncServer(client_manager=manager,
+        logger=False,
+        async_mode='aiohttp')
+
+app = web.Application()
 sio.attach(app)
 
 
-User = namedtuple('User', 'sid username avatar status')
+User = namedtuple('User', 'sid username avatar')
 
 users = defaultdict(User)
 
@@ -21,7 +27,6 @@ class HongpaNamespace(socketio.AsyncNamespace):
 
     def on_connect(self,sid,environ):
         print('connect ' + sid)
-        print(environ)
 
     def on_disconnect(self,sid):
         print('disconnect ' + sid)
@@ -29,29 +34,30 @@ class HongpaNamespace(socketio.AsyncNamespace):
 
     async def on_login(self,sid,data):
 
+        print(type(data),data)
         username = data['username']
+        avatar = 'https://api.adorable.io/avatars/200/' + username
 
-        user = User()
-        user.username = username
-        user.avatar = 'https://api.adorable.io/avatars/200/' + username
-        user.sid = sid
+        user = User(sid=sid,username=username,avatar=avatar)
 
         users[sid] = user
 
-        await self.emit('logined', {'user':user._asdict(),'code':0}, room=sid)
+        send_message = {'user':user._asdict(),'code':0}
 
-        for ssid in self.manager.get_participants(self, sid):
-            print(ssid)
+        print(send_message)
+
+        await self.emit('logined', send_message, room=sid)
+
 
 
     async def on_create(self,sid,data):
-        rooms = self.manager.rooms[None].keys()
+        rooms = manager.rooms[None].keys()
 
-        print('rooms ', rooms)
+        print('create ', data, rooms)
 
         rooms_data = []
         for room in rooms:
-            sids = self.manager.rooms[None][room].keys()
+            sids = manager.rooms[None][room].keys()
             print('sids ', sids)
             users = [users[s]._asdict() for s in sids]
             _room = {'sid':room}
@@ -59,10 +65,14 @@ class HongpaNamespace(socketio.AsyncNamespace):
             _room['users'] = users
             rooms_data.append(_room)
 
+        print(rooms_data)
+
         await self.emit('rooms',{'rooms':rooms_data,'code':0},room=sid)
 
 
     async def on_join(self,sid,data):
+
+        print('join ', data)
 
         room_sid = data['sid']
         self.enter_room(sid,room_sid)
@@ -76,6 +86,8 @@ class HongpaNamespace(socketio.AsyncNamespace):
 
     async def on_leave(self,sid,data):
 
+        print('leave ', data)
+
         room_sid = data['sid']
         if sid == room_sid:
             return
@@ -87,16 +99,16 @@ class HongpaNamespace(socketio.AsyncNamespace):
 
 
 
-@app.listener('before_server_start')
+#@app.listener('before_server_start')
 def before_server_start(app, loop):
     print('before server start')
 
 
-@app.listener('after_server_stop')
+#@app.listener('after_server_stop')
 async def after_server_stop(app, loop):
     print('after server stop')
 
-@app.middleware('response')
+#@app.middleware('response')
 async def auth(request, response):
     print('middleware')
 
@@ -105,4 +117,5 @@ sio.register_namespace(HongpaNamespace())
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0',port=6001)
+    #app.run(host='0.0.0.0',port=6001)
+    web.run_app(app,host='0.0.0.0',port=6001)
