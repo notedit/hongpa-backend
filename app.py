@@ -1,6 +1,6 @@
 
 import socketio
-
+from pprint import pprint
 from socketio import asyncio_manager
 
 from aiohttp import web
@@ -20,7 +20,7 @@ sio.attach(app)
 
 User = namedtuple('User', 'sid username avatar')
 
-users = defaultdict(User)
+users = {}
 
 
 class HongpaNamespace(socketio.AsyncNamespace):
@@ -31,6 +31,7 @@ class HongpaNamespace(socketio.AsyncNamespace):
     def on_disconnect(self,sid):
         print('disconnect ' + sid)
         users.pop(sid,None)
+        manager.leave_room(sid,'/',sid)
 
     async def on_login(self,sid,data):
 
@@ -51,18 +52,24 @@ class HongpaNamespace(socketio.AsyncNamespace):
 
 
     async def on_create(self,sid,data):
-        rooms = manager.rooms[None].keys()
+
+        print('create ', sid, data)
+        print(manager.rooms)
+
+        rooms = manager.rooms['/'].keys()
 
         print('create ', data, rooms)
 
         rooms_data = []
         for room in rooms:
-            sids = manager.rooms[None][room].keys()
+            sids = manager.rooms['/'][room].keys()
+            if users.get(room) == None:
+                continue
             print('sids ', sids)
-            users = [users[s]._asdict() for s in sids]
+            us = [users[s]._asdict() for s in sids]
             _room = {'sid':room}
             _room['user'] = users[room]._asdict()
-            _room['users'] = users
+            _room['users'] = us
             rooms_data.append(_room)
 
         print(rooms_data)
@@ -97,6 +104,10 @@ class HongpaNamespace(socketio.AsyncNamespace):
 
         await self.emit('user_leaved',{'user':user._asdict(),'code':0},room=room_sid,skip_sid=sid)
 
+
+    async def on_message(self,sid,data):
+
+        print('on_message ', sid, data)
 
 
 #@app.listener('before_server_start')
